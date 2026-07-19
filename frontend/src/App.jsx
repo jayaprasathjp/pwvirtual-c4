@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import FanAssistant from './components/FanAssistant';
-import StaffDashboard from './components/StaffDashboard';
+import React, { useState, Suspense, lazy } from 'react';
 import './App.css';
+
+// Lazy loading components for code splitting (Efficiency)
+const FanAssistant = lazy(() => import('./components/FanAssistant'));
+const StaffDashboard = lazy(() => import('./components/StaffDashboard'));
 
 function App() {
   const [activeTab, setActiveTab] = useState('fan');
@@ -31,7 +33,9 @@ function App() {
       </header>
 
       <main className="main-content" role="main">
-        {activeTab === 'fan' ? <FanAssistant /> : <StaffDashboard />}
+        <Suspense fallback={<div style={{ textAlign: 'center', padding: '2rem' }}><span className="loader" aria-label="Loading section"></span> Loading...</div>}>
+          {activeTab === 'fan' ? <FanAssistant /> : <StaffDashboard />}
+        </Suspense>
       </main>
     </div>
   );

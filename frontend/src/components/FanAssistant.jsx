@@ -1,8 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
+/**
+ * FanAssistant Component
+ * Provides a chat interface for fans to ask questions in their preferred language.
+ */
 const FanAssistant = () => {
   const [messages, setMessages] = useState([{ sender: 'ai', text: 'Hello! I am your FIFA 2026 Stadium Assistant. How can I help you today?' }]);
   const [input, setInput] = useState('');
+  const [language, setLanguage] = useState('English');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -27,11 +33,11 @@ const FanAssistant = () => {
       const response = await fetch('http://localhost:3001/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage })
+        body: JSON.stringify({ message: userMessage, language })
       });
       const data = await response.json();
       
-      setMessages(prev => [...prev, { sender: 'ai', text: data.reply || data.error || 'Something went wrong.' }]);
+      setMessages(prev => [...prev, { sender: 'ai', text: data.reply || (data.errors && data.errors[0].msg) || 'Something went wrong.' }]);
     } catch (error) {
       setMessages(prev => [...prev, { sender: 'ai', text: 'Sorry, I am currently offline. Please try again later.' }]);
     } finally {
@@ -41,6 +47,22 @@ const FanAssistant = () => {
 
   return (
     <div className="glass-panel chat-container" role="region" aria-label="Fan Assistant Chat">
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+        <label htmlFor="language-select" style={{ marginRight: '10px' }}>Language:</label>
+        <select 
+          id="language-select"
+          value={language} 
+          onChange={(e) => setLanguage(e.target.value)}
+          className="chat-input"
+          style={{ padding: '5px 10px', width: 'auto' }}
+        >
+          <option value="English">English</option>
+          <option value="Spanish">Español</option>
+          <option value="French">Français</option>
+          <option value="Arabic">العربية</option>
+        </select>
+      </div>
+
       <div className="chat-history" aria-live="polite">
         {messages.map((msg, idx) => (
           <div key={idx} className={`chat-bubble ${msg.sender}`}>
@@ -70,5 +92,8 @@ const FanAssistant = () => {
     </div>
   );
 };
+
+// Even though there are no props passed right now, setting up PropTypes is good practice for future scale.
+FanAssistant.propTypes = {};
 
 export default FanAssistant;

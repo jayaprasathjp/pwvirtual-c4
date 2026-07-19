@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
+/**
+ * StaffDashboard Component
+ * Provides operational intelligence to stadium staff based on real-time crowd data.
+ */
 const StaffDashboard = () => {
   const [insights, setInsights] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Real-time simulated state
+  const [totalAttendance, setTotalAttendance] = useState(65432);
+  const [gateAWait, setGateAWait] = useState(25);
 
-  // Simulated crowd data
   const crowdData = {
-    totalAttendance: 65432,
+    totalAttendance,
     gates: {
-      gateA: { status: 'crowded', waitTimeMins: 25 },
+      gateA: { status: gateAWait > 15 ? 'crowded' : 'clear', waitTimeMins: gateAWait },
       gateB: { status: 'clear', waitTimeMins: 5 },
       gateC: { status: 'moderate', waitTimeMins: 12 }
     },
@@ -31,7 +39,7 @@ const StaffDashboard = () => {
         body: JSON.stringify({ crowdData })
       });
       const data = await response.json();
-      setInsights(data.recommendations);
+      setInsights(data.recommendations || (data.errors && data.errors[0].msg) || 'No insights returned.');
     } catch (error) {
       setInsights('Failed to fetch AI insights. Check server connection.');
     } finally {
@@ -41,7 +49,15 @@ const StaffDashboard = () => {
 
   useEffect(() => {
     fetchInsights();
-    // Refresh insights every 5 minutes in a real app
+    
+    // Simulate real-time data changes
+    const interval = setInterval(() => {
+        setTotalAttendance(prev => prev + Math.floor(Math.random() * 10));
+        setGateAWait(prev => Math.max(0, prev + (Math.random() > 0.5 ? 1 : -1)));
+    }, 5000);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -51,11 +67,13 @@ const StaffDashboard = () => {
       <div className="dashboard-grid">
         <div className="glass-panel stat-card">
           <h3>Total Attendance</h3>
-          <div className="stat-value">{crowdData.totalAttendance.toLocaleString()}</div>
+          <div className="stat-value">{totalAttendance.toLocaleString()}</div>
         </div>
         <div className="glass-panel stat-card">
           <h3>Gate A Wait Time</h3>
-          <div className="stat-value" style={{ color: '#e63946' }}>{crowdData.gates.gateA.waitTimeMins} mins</div>
+          <div className="stat-value" style={{ color: gateAWait > 15 ? '#e63946' : '#2a9d8f' }}>
+            {gateAWait} mins
+          </div>
         </div>
         <div className="glass-panel stat-card">
           <h3>Gate B Wait Time</h3>
@@ -81,5 +99,7 @@ const StaffDashboard = () => {
     </div>
   );
 };
+
+StaffDashboard.propTypes = {};
 
 export default StaffDashboard;

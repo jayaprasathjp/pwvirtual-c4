@@ -4,6 +4,7 @@ import './App.css';
 // Lazy loading components for code splitting (Efficiency)
 const FanAssistant = lazy(() => import('./components/FanAssistant'));
 const StaffDashboard = lazy(() => import('./components/StaffDashboard'));
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const [activeTab, setActiveTab] = useState('fan');
@@ -33,9 +34,11 @@ function App() {
       </header>
 
       <main className="main-content" role="main">
-        <Suspense fallback={<div style={{ textAlign: 'center', padding: '2rem' }}><span className="loader" aria-label="Loading section"></span> Loading...</div>}>
-          {activeTab === 'fan' ? <FanAssistant /> : <StaffDashboard />}
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: '2rem' }}><span className="loader" aria-label="Loading section"></span> Loading...</div>}>
+            {activeTab === 'fan' ? <FanAssistant /> : <StaffDashboard />}
+          </Suspense>
+        </ErrorBoundary>
       </main>
     </div>
   );
